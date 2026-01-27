@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenStack Admin Assistant Portal</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🚀 OpenStack Admin Assistant Portal</h1>
+            <p class="subtitle">Upload diagnostic bundles for instant analysis</p>
+        </header>
+
+        <!-- Upload Section -->
+        <section class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📦</div>
+                <h3>Drop your diagnostic bundle here</h3>
+                <p>or click to browse</p>
+                <input type="file" id="fileInput" accept=".tar.gz,.tgz" hidden>
+                <button class="btn-primary" id="browseBtn">Browse Files</button>
+            </div>
+            
+            <div class="file-info" id="fileInfo" style="display: none;">
+                <p><strong>Selected:</strong> <span id="fileName"></span></p>
+                <p><strong>Size:</strong> <span id="fileSize"></span></p>
+            </div>
+            
+            <button class="btn-analyze" id="analyzeBtn" disabled>Analyze Bundle</button>
+            
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section class="results-section" id="resultsSection" style="display: none;">
+            <!-- Metadata Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>📋 Bundle Metadata</h2>
+                </div>
+                <div class="panel-body" id="metadataPanel">
+                    <!-- Metadata will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Failed Services Panel -->
+            <div class="panel" id="servicesPanel" style="display: none;">
+                <div class="panel-header">
+                    <h2>⚠️ Failed Services</h2>
+                    <span class="badge" id="servicesBadge">0</span>
+                </div>
+                <div class="panel-body" id="servicesBody">
+                    <!-- Services will be inserted here -->
+                </div>
+            </div>
+
+            <!-- HAProxy Findings Panel -->
+            <div class="panel" id="haproxyPanel" style="display: none;">
+                <div class="panel-header">
+                    <h2>🌐 HAProxy Health</h2>
+                </div>
+                <div class="panel-body" id="haproxyBody">
+                    <!-- HAProxy findings will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Errors Panel -->
+            <div class="panel" id="errorsPanel" style="display: none;">
+                <div class="panel-header">
+                    <h2>🐛 Top Errors</h2>
+                    <span class="badge" id="errorsBadge">0</span>
+                </div>
+                <div class="panel-body" id="errorsBody">
+                    <!-- Errors will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Port Listeners Panel -->
+            <div class="panel" id="portsPanel" style="display: none;">
+                <div class="panel-header">
+                    <h2>🔌 Port Listeners Summary</h2>
+                    <span class="badge" id="portsBadge">0</span>
+                </div>
+                <div class="panel-body" id="portsBody">
+                    <!-- Ports will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Recommendations Panel -->
+            <div class="panel" id="recommendationsPanel" style="display: none;">
+                <div class="panel-header">
+                    <h2>💡 Suggested Next Steps</h2>
+                </div>
+                <div class="panel-body" id="recommendationsBody">
+                    <!-- Recommendations will be inserted here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Error Message -->
+        <div class="error-message" id="errorMessage" style="display: none;">
+            <span id="errorText"></span>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>OpenStack Admin Assistant Portal v0.1.0 | Powered by FastAPI</p>
+        </footer>
+    </div>
+
+    <!-- Chatbase Widget -->
+    <script>
+    (function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="fhMrQLDuXD6phg6uW1EEW";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
+    </script>
+
+    <script src="app.js"></script>
+</body>
+</html>

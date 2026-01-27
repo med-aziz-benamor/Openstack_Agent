@@ -3,120 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenStack Admin Assistant Portal</title>
+    <title>OpenStack Admin Dashboard</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <h1>🚀 OpenStack Admin Assistant Portal</h1>
-            <p class="subtitle">Upload diagnostic bundles for instant analysis</p>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 2L28 9V23L16 30L4 23V9L16 2Z" fill="#DA1A32"/>
+                    <path d="M16 8L22 11.5V18.5L16 22L10 18.5V11.5L16 8Z" fill="white"/>
+                </svg>
+                <span class="logo-text">OpenStack</span>
+            </div>
+            <div class="logo-subtitle">Admin Portal</div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H9z"/>
+                    <path d="M3 8a2 2 0 012-2v10a2 2 0 01-2-2V8z"/>
+                </svg>
+                <span>Diagnostics</span>
+            </a>
+            <a href="#" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                </svg>
+                <span>System Health</span>
+            </a>
+            <a href="#" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                </svg>
+                <span>Reports</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="version-badge">
+                <span class="version-label">Version</span>
+                <span class="version-number" id="sidebar-version">1.0.0</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <h1 class="page-title">Diagnostic Bundle Analyzer</h1>
+                <p class="page-subtitle">Upload and analyze OpenStack diagnostic bundles</p>
+            </div>
+            <div class="top-bar-right">
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">System Online</span>
+                </div>
+            </div>
         </header>
 
-        <!-- Upload Section -->
-        <section class="upload-section">
-            <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">📦</div>
-                <h3>Drop your diagnostic bundle here</h3>
-                <p>or click to browse</p>
-                <input type="file" id="fileInput" accept=".tar.gz,.tgz" hidden>
-                <button class="btn-primary" id="browseBtn">Browse Files</button>
-            </div>
-            
-            <div class="file-info" id="fileInfo" style="display: none;">
-                <p><strong>Selected:</strong> <span id="fileName"></span></p>
-                <p><strong>Size:</strong> <span id="fileSize"></span></p>
-            </div>
-            
-            <button class="btn-analyze" id="analyzeBtn" disabled>Analyze Bundle</button>
-            
-            <div class="progress-bar" id="progressBar" style="display: none;">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-        </section>
-
-        <!-- Results Section -->
-        <section class="results-section" id="resultsSection" style="display: none;">
-            <!-- Metadata Panel -->
-            <div class="panel">
-                <div class="panel-header">
-                    <h2>📋 Bundle Metadata</h2>
+        <main class="dashboard-content">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #DA1A32 0%, #A01020 100%);">
+                        <svg width="24" height="24" viewBox="0 0 20 20" fill="white">
+                            <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H9z"/>
+                            <path d="M3 8a2 2 0 012-2v10a2 2 0 01-2-2V8z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Bundles Analyzed</div>
+                        <div class="stat-value" id="stat-analyzed">0</div>
+                    </div>
                 </div>
-                <div class="panel-body" id="metadataPanel">
-                    <!-- Metadata will be inserted here -->
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);">
+                        <svg width="24" height="24" viewBox="0 0 20 20" fill="white">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Issues Found</div>
+                        <div class="stat-value" id="stat-issues">0</div>
+                    </div>
                 </div>
-            </div>
-
-            <!-- Failed Services Panel -->
-            <div class="panel" id="servicesPanel" style="display: none;">
-                <div class="panel-header">
-                    <h2>⚠️ Failed Services</h2>
-                    <span class="badge" id="servicesBadge">0</span>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%);">
+                        <svg width="24" height="24" viewBox="0 0 20 20" fill="white">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Health Status</div>
+                        <div class="stat-value" id="stat-health">Good</div>
+                    </div>
                 </div>
-                <div class="panel-body" id="servicesBody">
-                    <!-- Services will be inserted here -->
-                </div>
-            </div>
-
-            <!-- HAProxy Findings Panel -->
-            <div class="panel" id="haproxyPanel" style="display: none;">
-                <div class="panel-header">
-                    <h2>🌐 HAProxy Health</h2>
-                </div>
-                <div class="panel-body" id="haproxyBody">
-                    <!-- HAProxy findings will be inserted here -->
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);">
+                        <svg width="24" height="24" viewBox="0 0 20 20" fill="white">
+                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Last Analysis</div>
+                        <div class="stat-value" id="stat-last">Never</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Errors Panel -->
-            <div class="panel" id="errorsPanel" style="display: none;">
-                <div class="panel-header">
-                    <h2>🐛 Top Errors</h2>
-                    <span class="badge" id="errorsBadge">0</span>
+            <!-- Upload Section -->
+            <div class="card upload-card">
+                <div class="card-header">
+                    <h2 class="card-title">Upload Diagnostic Bundle</h2>
+                    <p class="card-subtitle">Analyze OpenStack diagnostic bundles for issues and recommendations</p>
                 </div>
-                <div class="panel-body" id="errorsBody">
-                    <!-- Errors will be inserted here -->
+                <div class="card-body">
+                    <div class="upload-box" id="uploadBox">
+                        <div class="upload-icon">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                        </div>
+                        <p class="upload-text">Drag & drop your diagnostic bundle here</p>
+                        <p class="upload-subtext">or click to browse files</p>
+                        <button class="btn btn-primary" id="selectFileBtn">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z"/>
+                            </svg>
+                            Select File
+                        </button>
+                        <input type="file" id="fileInput" accept=".tar,.tar.gz,.tgz" hidden>
+                        <p class="file-info">
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            </svg>
+                            Supported: .tar, .tar.gz, .tgz (max 100MB)
+                        </p>
+                    </div>
+                    
+                    <div class="progress-container" id="progressContainer" style="display: none;">
+                        <div class="progress-info">
+                            <span class="progress-label" id="progressText">Uploading...</span>
+                            <span class="progress-percent" id="progressPercent">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Port Listeners Panel -->
-            <div class="panel" id="portsPanel" style="display: none;">
-                <div class="panel-header">
-                    <h2>🔌 Port Listeners Summary</h2>
-                    <span class="badge" id="portsBadge">0</span>
-                </div>
-                <div class="panel-body" id="portsBody">
-                    <!-- Ports will be inserted here -->
-                </div>
-            </div>
-
-            <!-- Recommendations Panel -->
-            <div class="panel" id="recommendationsPanel" style="display: none;">
-                <div class="panel-header">
-                    <h2>💡 Suggested Next Steps</h2>
-                </div>
-                <div class="panel-body" id="recommendationsBody">
-                    <!-- Recommendations will be inserted here -->
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <div class="card results-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Analysis Results</h2>
+                        <button class="btn btn-secondary btn-sm" id="clearResults">
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                            </svg>
+                            Clear
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="results-container" id="results"></div>
+                    </div>
                 </div>
             </div>
-        </section>
-
-        <!-- Error Message -->
-        <div class="error-message" id="errorMessage" style="display: none;">
-            <span id="errorText"></span>
-        </div>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <p>OpenStack Admin Assistant Portal v0.1.0 | Powered by FastAPI</p>
-        </footer>
+        </main>
     </div>
 
     <!-- Chatbase Widget -->
     <script>
-    (function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="fhMrQLDuXD6phg6uW1EEW";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
+      window.embeddedChatbotConfig = {
+        chatbotId: "YOUR_CHATBOT_ID_HERE",
+        domain: "www.chatbase.co"
+      }
     </script>
+    <script src="https://www.chatbase.co/embed.min.js" chatbotId="YOUR_CHATBOT_ID_HERE" domain="www.chatbase.co" defer></script>
 
     <script src="app.js"></script>
 </body>

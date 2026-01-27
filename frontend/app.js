@@ -6,53 +6,69 @@
 let selectedFile = null;
 
 // DOM Elements
-const uploadArea = document.getElementById('uploadArea');
+const uploadBox = document.getElementById('uploadBox');
 const fileInput = document.getElementById('fileInput');
-const browseBtn = document.getElementById('browseBtn');
-const analyzeBtn = document.getElementById('analyzeBtn');
-const fileInfo = document.getElementById('fileInfo');
-const fileName = document.getElementById('fileName');
-const fileSize = document.getElementById('fileSize');
-const progressBar = document.getElementById('progressBar');
+const selectFileBtn = document.getElementById('selectFileBtn');
+const progressContainer = document.getElementById('progressContainer');
 const progressFill = document.getElementById('progressFill');
+const progressText = document.getElementById('progressText');
+const progressPercent = document.getElementById('progressPercent');
 const resultsSection = document.getElementById('resultsSection');
-const errorMessage = document.getElementById('errorMessage');
-const errorText = document.getElementById('errorText');
+const results = document.getElementById('results');
+const clearResults = document.getElementById('clearResults');
+
+// Stats elements
+const statAnalyzed = document.getElementById('stat-analyzed');
+const statIssues = document.getElementById('stat-issues');
+const statHealth = document.getElementById('stat-health');
+const statLast = document.getElementById('stat-last');
+const sidebarVersion = document.getElementById('sidebar-version');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
+    fetchVersion();
 });
 
 function setupEventListeners() {
-    // Browse button
-    browseBtn.addEventListener('click', () => fileInput.click());
+    // File select button
+    selectFileBtn.addEventListener('click', () => fileInput.click());
     
     // File input change
     fileInput.addEventListener('change', handleFileSelect);
     
     // Drag and drop
-    uploadArea.addEventListener('dragover', handleDragOver);
-    uploadArea.addEventListener('dragleave', handleDragLeave);
-    uploadArea.addEventListener('drop', handleDrop);
+    uploadBox.addEventListener('dragover', handleDragOver);
+    uploadBox.addEventListener('dragleave', handleDragLeave);
+    uploadBox.addEventListener('drop', handleDrop);
+    uploadBox.addEventListener('click', (e) => {
+        if (e.target === uploadBox || e.target.closest('.upload-icon, .upload-text, .upload-subtext')) {
+            fileInput.click();
+        }
+    });
     
-    // Analyze button
-    analyzeBtn.addEventListener('click', analyzeBundle);
+    // Clear results button
+    if (clearResults) {
+        clearResults.addEventListener('click', () => {
+            resultsSection.style.display = 'none';
+            results.innerHTML = '';
+        });
+    }
 }
 
 function handleDragOver(e) {
     e.preventDefault();
-    uploadArea.classList.add('drag-over');
+    uploadBox.classList.add('dragover');
 }
 
 function handleDragLeave(e) {
     e.preventDefault();
-    uploadArea.classList.remove('drag-over');
+    uploadBox.classList.remove('dragover');
 }
 
 function handleDrop(e) {
     e.preventDefault();
-    uploadArea.classList.remove('drag-over');
+    uploadBox.classList.remove('dragover');
     
     const files = e.dataTransfer.files;
     if (files.length > 0) {
@@ -67,21 +83,128 @@ function handleFileSelect(e) {
     }
 }
 
-function handleFile(file) {
+async function handleFile(file) {
     // Validate file type
-    if (!file.name.endsWith('.tar.gz') && !file.name.endsWith('.tgz')) {
-        showError('Invalid file type. Please upload a .tar.gz or .tgz file.');
+    if (!file.name.endsWith('.tar.gz') && !file.name.endsWith('.tgz') && !file.name.endsWith('.tar')) {
+        alert('Invalid file type. Please upload a .tar, .tar.gz, or .tgz file.');
         return;
     }
     
     // Validate file size (100MB limit)
     const maxSize = 100 * 1024 * 1024; // 100MB
     if (file.size > maxSize) {
-        showError('File too large. Maximum size is 100MB.');
+        alert('File too large. Maximum size is 100MB.');
         return;
     }
     
     selectedFile = file;
+    
+    // Show progress
+    progressContainer.style.display = 'block';
+    progressText.textContent = 'Uploading and analyzing...';
+    progressPercent.textContent = '0%';
+    progressFill.style.width = '0%';
+    
+    // Upload and analyze
+    await uploadAndAnalyze();
+}
+
+async function uploadAndAnalyze() {
+    if (!selectedFile) return;
+    
+    try {
+        // Create form data
+        const formData = new FormData();
+        formData.append('bundle', selectedFile);
+        
+        // Simulate progress
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += 5;
+            if (progress <= 90) {
+                progressFill.style.width = `${progress}%`;
+                progressPercent.textContent = `${progress}%`;
+            }
+        }, 100);
+        
+        // Send request
+        const response = await fetch('/api/analyze', {
+            method: 'POST',
+            body: formData
+        });
+        
+        clearInterval(progressInterval);
+        progressFill.style.width = '100%';
+        progressPercent.textContent = '100%';
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Analysis failed');
+        }
+        
+        const result = await response.json();
+        
+        // Hide progress
+        setTimeout(() => {
+            progressContainer.style.display = 'none';
+        }, 500);
+        
+        // Update stats
+        updateStats(result);
+        
+        // Display results
+        displayResults(result);
+        
+    } catch (error) {
+        console.error('Analysis error:', error);
+        progressContainer.style.display = 'none';
+        alert(`Analysis failed: ${error.message}`);
+    }
+}
+
+// Fetch version from API
+async function fetchVersion() {
+    try {
+        const response = await fetch('/api/version');
+        const data = await response.json();
+        if (sidebarVersion) {
+            sidebarVersion.textContent = data.version || '1.0.0';
+        }
+    } catch (error) {
+        console.error('Failed to fetch version:', error);
+    }
+}
+
+// Update dashboard stats
+function updateStats(result) {
+    // Increment analyzed count
+    const currentCount = parseInt(statAnalyzed.textContent) || 0;
+    statAnalyzed.textContent = currentCount + 1;
+    
+    // Update issues count
+    const issuesCount = (result.failed_services?.length || 0) + 
+                        (result.top_errors?.length || 0);
+    statIssues.textContent = issuesCount;
+    
+    // Update health status
+    if (issuesCount === 0) {
+        statHealth.textContent = 'Excellent';
+        statHealth.style.color = 'var(--accent-green)';
+    } else if (issuesCount < 5) {
+        statHealth.textContent = 'Good';
+        statHealth.style.color = 'var(--accent-green)';
+    } else if (issuesCount < 10) {
+        statHealth.textContent = 'Fair';
+        statHealth.style.color = 'var(--accent-yellow)';
+    } else {
+        statHealth.textContent = 'Poor';
+        statHealth.style.color = 'var(--openstack-red)';
+    }
+    
+    // Update last analysis time
+    const now = new Date();
+    statLast.textContent = now.toLocaleTimeString();
+}
     
     // Update UI
     fileName.textContent = file.name;
