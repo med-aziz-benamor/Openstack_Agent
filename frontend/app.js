@@ -275,49 +275,225 @@ function animateProgress() {
 
 function displayResults(data) {
     resultsSection.style.display = 'block';
+    results.innerHTML = '';
     
     // Scroll to results
     setTimeout(() => {
         resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
     
+    let html = '';
+    
     // Display metadata
-    displayMetadata(data.metadata);
+    if (data.metadata) {
+        html += `
+            <div class="result-panel">
+                <div class="result-panel-header">
+                    <h3 class="result-panel-title">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        Bundle Metadata
+                    </h3>
+                </div>
+                <div class="result-panel-body">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                        <div><strong>Hostname:</strong> ${data.metadata.hostname || 'Unknown'}</div>
+                        <div><strong>Timestamp:</strong> ${data.metadata.timestamp || 'Unknown'}</div>
+                        <div><strong>File Hash:</strong> <code>${data.metadata.file_hash?.substring(0, 16)}...</code></div>
+                        <div><strong>Files Extracted:</strong> ${data.metadata.extracted_file_count}</div>
+                        <div><strong>Directories:</strong> ${data.metadata.extracted_dir_count}</div>
+                        <div><strong>Filename:</strong> ${data.metadata.uploaded_filename || 'N/A'}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
     
     // Display failed services
     if (data.failed_services && data.failed_services.length > 0) {
-        displayFailedServices(data.failed_services);
-    } else {
-        document.getElementById('servicesPanel').style.display = 'none';
+        html += `
+            <div class="result-panel">
+                <div class="result-panel-header">
+                    <h3 class="result-panel-title">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                        Failed Services
+                    </h3>
+                    <span class="badge badge-error">${data.failed_services.length}</span>
+                </div>
+                <div class="result-panel-body">
+                    <ul class="result-list">
+                        ${data.failed_services.map(service => `
+                            <li class="result-list-item">
+                                <div class="result-list-item-title" style="color: var(--openstack-red);">
+                                    ❌ ${escapeHtml(service)}
+                                </div>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            </div>
+        `;
     }
     
     // Display HAProxy findings
     if (data.haproxy_findings) {
-        displayHAProxyFindings(data.haproxy_findings);
-    } else {
-        document.getElementById('haproxyPanel').style.display = 'none';
+        const findings = data.haproxy_findings;
+        const hasFindings = 
+            (findings.has_no_server_available && findings.has_no_server_available.length > 0) ||
+            (findings.server_up_down && findings.server_up_down.length > 0) ||
+            (findings.timeouts && findings.timeouts.length > 0);
+        
+        if (hasFindings) {
+            html += `
+                <div class="result-panel">
+                    <div class="result-panel-header">
+                        <h3 class="result-panel-title">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+                            </svg>
+                            HAProxy Health
+                        </h3>
+                    </div>
+                    <div class="result-panel-body">
+            `;
+            
+            if (findings.has_no_server_available && findings.has_no_server_available.length > 0) {
+                html += `
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="color: var(--openstack-red); margin-bottom: 0.5rem;">⚠️ Backends with No Available Servers</h4>
+                        <div class="code-block">
+                            ${findings.has_no_server_available.map(line => escapeHtml(line)).join('\n')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (findings.server_up_down && findings.server_up_down.length > 0) {
+                html += `
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="color: var(--accent-yellow); margin-bottom: 0.5rem;">🔄 Server Status Changes</h4>
+                        <div class="code-block">
+                            ${findings.server_up_down.slice(0, 10).map(line => escapeHtml(line)).join('\n')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (findings.timeouts && findings.timeouts.length > 0) {
+                html += `
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="color: var(--accent-yellow); margin-bottom: 0.5rem;">⏱️ Timeouts</h4>
+                        <div class="code-block">
+                            ${findings.timeouts.slice(0, 10).map(line => escapeHtml(line)).join('\n')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += `
+                    </div>
+                </div>
+            `;
+        }
     }
     
     // Display errors
     if (data.error_summary && data.error_summary.length > 0) {
-        displayErrors(data.error_summary);
-    } else {
-        document.getElementById('errorsPanel').style.display = 'none';
+        html += `
+            <div class="result-panel">
+                <div class="result-panel-header">
+                    <h3 class="result-panel-title">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        Top Errors
+                    </h3>
+                    <span class="badge badge-error">${data.error_summary.length}</span>
+                </div>
+                <div class="result-panel-body">
+                    <ul class="result-list">
+                        ${data.error_summary.map(error => `
+                            <li class="result-list-item">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <strong style="color: var(--openstack-red);">${escapeHtml(error.service)}</strong>
+                                    <span class="badge badge-error">×${error.count}</span>
+                                </div>
+                                <div class="code-block" style="margin-bottom: 0.25rem;">${escapeHtml(error.line)}</div>
+                                ${error.source_file ? `<div style="font-size: 0.75rem; color: var(--text-tertiary);">Source: ${escapeHtml(error.source_file)}</div>` : ''}
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            </div>
+        `;
     }
     
     // Display port listeners
     if (data.listen_summary && data.listen_summary.length > 0) {
-        displayPortListeners(data.listen_summary);
-    } else {
-        document.getElementById('portsPanel').style.display = 'none';
+        html += `
+            <div class="result-panel">
+                <div class="result-panel-header">
+                    <h3 class="result-panel-title">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                        </svg>
+                        Port Listeners Summary
+                    </h3>
+                    <span class="badge badge-info">${data.listen_summary.length}</span>
+                </div>
+                <div class="result-panel-body">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: var(--bg-tertiary); text-align: left;">
+                                <th style="padding: 0.75rem; font-weight: 600;">Port</th>
+                                <th style="padding: 0.75rem; font-weight: 600;">Process</th>
+                                <th style="padding: 0.75rem; font-weight: 600;">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.listen_summary.map((port, idx) => `
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 0.75rem;"><strong style="color: var(--accent-blue);">${escapeHtml(port.port)}</strong></td>
+                                    <td style="padding: 0.75rem;">${port.process ? escapeHtml(port.process) : '<em>unknown</em>'}</td>
+                                    <td style="padding: 0.75rem; font-size: 0.8125rem; color: var(--text-secondary);">${escapeHtml(port.full_line)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
     }
     
     // Display recommendations
     if (data.recommendations && data.recommendations.length > 0) {
-        displayRecommendations(data.recommendations);
-    } else {
-        document.getElementById('recommendationsPanel').style.display = 'none';
+        html += `
+            <div class="result-panel">
+                <div class="result-panel-header">
+                    <h3 class="result-panel-title">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z"/>
+                        </svg>
+                        Suggested Next Steps
+                    </h3>
+                </div>
+                <div class="result-panel-body">
+                    <ul class="result-list">
+                        ${data.recommendations.map(rec => `
+                            <li class="result-list-item">
+                                <div class="result-list-item-title" style="color: var(--accent-purple);">💡 ${escapeHtml(rec)}</div>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            </div>
+        `;
     }
+    
+    results.innerHTML = html;
 }
 
 function displayMetadata(metadata) {
