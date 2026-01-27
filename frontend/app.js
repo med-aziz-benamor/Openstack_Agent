@@ -26,26 +26,40 @@ const sidebarVersion = document.getElementById('sidebar-version');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing...');
     setupEventListeners();
     fetchVersion();
 });
 
 function setupEventListeners() {
+    console.log('Setting up event listeners...');
+    
     // File select button
-    selectFileBtn.addEventListener('click', () => fileInput.click());
+    if (selectFileBtn) {
+        selectFileBtn.addEventListener('click', (e) => {
+            console.log('Select file button clicked');
+            e.preventDefault();
+            fileInput.click();
+        });
+    }
     
     // File input change
-    fileInput.addEventListener('change', handleFileSelect);
+    if (fileInput) {
+        fileInput.addEventListener('change', handleFileSelect);
+    }
     
     // Drag and drop
-    uploadBox.addEventListener('dragover', handleDragOver);
-    uploadBox.addEventListener('dragleave', handleDragLeave);
-    uploadBox.addEventListener('drop', handleDrop);
-    uploadBox.addEventListener('click', (e) => {
-        if (e.target === uploadBox || e.target.closest('.upload-icon, .upload-text, .upload-subtext')) {
-            fileInput.click();
-        }
-    });
+    if (uploadBox) {
+        uploadBox.addEventListener('dragover', handleDragOver);
+        uploadBox.addEventListener('dragleave', handleDragLeave);
+        uploadBox.addEventListener('drop', handleDrop);
+        uploadBox.addEventListener('click', (e) => {
+            if (e.target === uploadBox || e.target.closest('.upload-icon, .upload-text, .upload-subtext')) {
+                console.log('Upload box clicked');
+                fileInput.click();
+            }
+        });
+    }
     
     // Clear results button
     if (clearResults) {
@@ -54,6 +68,8 @@ function setupEventListeners() {
             results.innerHTML = '';
         });
     }
+    
+    console.log('Event listeners set up successfully');
 }
 
 function handleDragOver(e) {
