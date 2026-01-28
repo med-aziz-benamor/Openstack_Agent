@@ -33,22 +33,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function setupEventListeners() {
     console.log('=== Setting up event listeners ===');
-    console.log('selectFileBtn exists:', !!selectFileBtn);
     console.log('fileInput exists:', !!fileInput);
     console.log('uploadBox exists:', !!uploadBox);
     
-    // File select button - SIMPLE AND DIRECT
-    if (selectFileBtn && fileInput) {
-        selectFileBtn.onclick = function(e) {
-            console.log('>>> Button clicked! Triggering file input...');
-            e.preventDefault();
-            e.stopPropagation();
-            fileInput.click();
-            console.log('>>> File input.click() called');
-        };
-        console.log('✓ Button click handler attached');
+    // File input change handler - the label handles the click automatically
+    if (fileInput) {
+        console.log('✓ File input found');
     } else {
-        console.error('❌ selectFileBtn or fileInput not found!');
+        console.error('❌ File input not found!');
     }
     
     // File input change
