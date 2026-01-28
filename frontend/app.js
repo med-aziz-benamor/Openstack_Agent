@@ -33,19 +33,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function setupEventListeners() {
     console.log('Setting up event listeners...');
+    console.log('selectFileBtn:', selectFileBtn);
+    console.log('fileInput:', fileInput);
+    console.log('uploadBox:', uploadBox);
     
-    // File select button
+    // File select button - most important, prevent bubbling
     if (selectFileBtn) {
         selectFileBtn.addEventListener('click', (e) => {
             console.log('Select file button clicked');
             e.preventDefault();
-            fileInput.click();
+            e.stopPropagation();
+            if (fileInput) {
+                fileInput.click();
+            } else {
+                console.error('fileInput not found!');
+            }
         });
+    } else {
+        console.error('selectFileBtn not found!');
     }
     
     // File input change
     if (fileInput) {
         fileInput.addEventListener('change', handleFileSelect);
+    } else {
+        console.error('fileInput not found!');
     }
     
     // Drag and drop
@@ -53,12 +65,21 @@ function setupEventListeners() {
         uploadBox.addEventListener('dragover', handleDragOver);
         uploadBox.addEventListener('dragleave', handleDragLeave);
         uploadBox.addEventListener('drop', handleDrop);
+        
+        // Click on upload box (but not on the button)
         uploadBox.addEventListener('click', (e) => {
-            if (e.target === uploadBox || e.target.closest('.upload-icon, .upload-text, .upload-subtext')) {
-                console.log('Upload box clicked');
+            // Don't trigger if clicking the button itself
+            if (e.target === selectFileBtn || selectFileBtn.contains(e.target)) {
+                console.log('Button click, skipping uploadBox handler');
+                return;
+            }
+            console.log('Upload box clicked');
+            if (fileInput) {
                 fileInput.click();
             }
         });
+    } else {
+        console.error('uploadBox not found!');
     }
     
     // Clear results button
