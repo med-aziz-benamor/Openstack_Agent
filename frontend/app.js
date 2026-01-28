@@ -32,65 +32,76 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupEventListeners() {
-    console.log('Setting up event listeners...');
-    console.log('selectFileBtn:', selectFileBtn);
-    console.log('fileInput:', fileInput);
-    console.log('uploadBox:', uploadBox);
+    console.log('=== Setting up event listeners ===');
+    console.log('selectFileBtn exists:', !!selectFileBtn);
+    console.log('fileInput exists:', !!fileInput);
+    console.log('uploadBox exists:', !!uploadBox);
     
-    // File select button - most important, prevent bubbling
-    if (selectFileBtn) {
-        selectFileBtn.addEventListener('click', (e) => {
-            console.log('Select file button clicked');
+    // File select button - SIMPLE AND DIRECT
+    if (selectFileBtn && fileInput) {
+        selectFileBtn.onclick = function(e) {
+            console.log('>>> Button clicked! Triggering file input...');
             e.preventDefault();
             e.stopPropagation();
-            if (fileInput) {
-                fileInput.click();
-            } else {
-                console.error('fileInput not found!');
-            }
-        });
+            fileInput.click();
+            console.log('>>> File input.click() called');
+        };
+        console.log('✓ Button click handler attached');
     } else {
-        console.error('selectFileBtn not found!');
+        console.error('❌ selectFileBtn or fileInput not found!');
     }
     
     // File input change
     if (fileInput) {
-        fileInput.addEventListener('change', handleFileSelect);
-    } else {
-        console.error('fileInput not found!');
+        fileInput.onchange = function(e) {
+            console.log('>>> File selected:', e.target.files);
+            handleFileSelect(e);
+        };
+        console.log('✓ File input change handler attached');
     }
     
     // Drag and drop
     if (uploadBox) {
-        uploadBox.addEventListener('dragover', handleDragOver);
-        uploadBox.addEventListener('dragleave', handleDragLeave);
-        uploadBox.addEventListener('drop', handleDrop);
+        uploadBox.ondragover = function(e) {
+            e.preventDefault();
+            uploadBox.classList.add('dragover');
+        };
         
-        // Click on upload box (but not on the button)
-        uploadBox.addEventListener('click', (e) => {
-            // Don't trigger if clicking the button itself
-            if (e.target === selectFileBtn || selectFileBtn.contains(e.target)) {
-                console.log('Button click, skipping uploadBox handler');
-                return;
+        uploadBox.ondragleave = function(e) {
+            e.preventDefault();
+            uploadBox.classList.remove('dragover');
+        };
+        
+        uploadBox.ondrop = function(e) {
+            e.preventDefault();
+            uploadBox.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                console.log('>>> File dropped:', e.dataTransfer.files[0]);
+                handleFile(e.dataTransfer.files[0]);
             }
-            console.log('Upload box clicked');
-            if (fileInput) {
+        };
+        
+        // Click on upload box area
+        uploadBox.onclick = function(e) {
+            if (e.target !== selectFileBtn && !selectFileBtn.contains(e.target)) {
+                console.log('>>> Upload box clicked, triggering file input');
                 fileInput.click();
             }
-        });
-    } else {
-        console.error('uploadBox not found!');
+        };
+        
+        console.log('✓ Drag & drop handlers attached');
     }
     
     // Clear results button
     if (clearResults) {
-        clearResults.addEventListener('click', () => {
+        clearResults.onclick = function() {
             resultsSection.style.display = 'none';
             results.innerHTML = '';
-        });
+        };
+        console.log('✓ Clear button handler attached');
     }
     
-    console.log('Event listeners set up successfully');
+    console.log('=== Event listeners setup complete ===');
 }
 
 function handleDragOver(e) {
